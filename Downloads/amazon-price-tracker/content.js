@@ -1032,7 +1032,7 @@ async function scanAllVariations() {
           console.warn(`Target size ${targetSize.name} not available for color ${color.name} - SKIPPING this color entirely`);
         }
       }
-    } // Close the color loop
+    } // Close for (let colorIndex...)
 
     console.log(`Combination scan complete. Found ${results.length} variations with prices.`);
 
