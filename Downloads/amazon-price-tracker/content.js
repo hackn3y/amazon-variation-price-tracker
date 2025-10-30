@@ -752,7 +752,6 @@ async function scanAllVariations() {
 
         // Wait for the re-selection to take effect
         await new Promise(resolve => setTimeout(resolve, 1000));
-      }
 
       // Re-query size elements after color change since DOM may have updated
       const updatedSizes = [];
@@ -1026,13 +1025,14 @@ async function scanAllVariations() {
             console.error(`Error scanning variation:`, error);
           }
         }
-        }
+        } // Close size for-loop from line 913
       } else { // Close the if block for target size availability check
         if (color) {
           console.warn(`Target size ${targetSize.name} not available for color ${color.name} - SKIPPING this color entirely`);
         }
       }
-    }
+      } // Close if (targetSize) from line 582
+    } // Close color for-loop from line 536
 
     console.log(`Combination scan complete. Found ${results.length} variations with prices.`);
 
