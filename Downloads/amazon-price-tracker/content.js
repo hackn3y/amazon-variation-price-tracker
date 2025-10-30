@@ -505,6 +505,9 @@ function findVariationOptions() {
 
 // Function to click through all variations and collect prices
 async function scanAllVariations() {
+  // Reset stop flag at the start of every scan
+  shouldStopScan = false;
+
   const variations = findVariationOptions();
 
   if (variations.length === 0) {
@@ -535,6 +538,13 @@ async function scanAllVariations() {
 
     for (let colorIndex = 0; colorIndex < colors.length; colorIndex++) {
       const color = colors[colorIndex];
+
+      // Send progress update at the start of each color
+      chrome.runtime.sendMessage({
+        type: 'scanProgress',
+        current: colorIndex + 1,
+        total: colors.length
+      });
 
       // Check if scan should be stopped
       if (shouldStopScan) {
@@ -1010,13 +1020,6 @@ async function scanAllVariations() {
           } else {
             console.warn(`⚠️ No price found for ${data.variationName}`);
           }
-
-          // Update progress
-          chrome.runtime.sendMessage({
-            type: 'scanProgress',
-            current: colorIndex + 1,
-            total: colors.length
-          });
 
         } catch (error) {
           if (color && size) {
