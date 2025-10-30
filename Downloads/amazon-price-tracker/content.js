@@ -1031,7 +1031,6 @@ async function scanAllVariations() {
           console.warn(`Target size ${targetSize.name} not available for color ${color.name} - SKIPPING this color entirely`);
         }
       }
-      } // Close if (targetSize) from line 582
     } // Close color for-loop from line 536
 
     console.log(`Combination scan complete. Found ${results.length} variations with prices.`);
