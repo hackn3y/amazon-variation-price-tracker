@@ -190,6 +190,7 @@ async function startScan() {
   stopBtn.style.display = 'block';
 
   document.getElementById('progress').style.display = 'block';
+  document.getElementById('progress').textContent = 'Starting scan...';
   document.getElementById('results').innerHTML = '';
 
   // IMPORTANT: Mark scan as running in storage IMMEDIATELY (synchronously)
@@ -661,8 +662,10 @@ function showStatus(message, type = 'info') {
 
 // Listen for progress updates
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  console.log('Popup received message:', request);
   if (request.type === 'scanProgress') {
-    document.getElementById('progress').textContent = 
-      `Scanning variation ${request.current} of ${request.total}...`;
+    const progressText = `Scanning color ${request.current} of ${request.total}...`;
+    console.log('Updating progress:', progressText);
+    document.getElementById('progress').textContent = progressText;
   }
 });

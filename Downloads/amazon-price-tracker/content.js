@@ -644,8 +644,15 @@ async function scanAllVariations() {
 
             // For standalone SPAN buttons with id="size_name_N"
             if (button.tagName === 'SPAN' && button.id && button.id.startsWith('size_name_')) {
-              buttonText = button.textContent.trim();
-              console.log(`   📝 SPAN button text: "${buttonText}"`);
+              // Use same extraction logic as initial scan
+              const innerSpan = button.querySelector('.a-button-text');
+              if (innerSpan && innerSpan.textContent) {
+                const rawText = innerSpan.textContent;
+                const beforeCSS = rawText.split('/*')[0];
+                buttonText = beforeCSS.trim().split(/\s+/)[0];
+                console.log(`   📝 SPAN button raw text: "${rawText.substring(0, 80)}"`);
+                console.log(`   📝 SPAN button extracted: "${buttonText}"`);
+              }
             } else {
               const parentElement = button.closest('li') || button.closest('.a-button-group') || button.closest('[data-csa-c-element-id]') || button.parentElement;
               console.log(`   Parent element: ${parentElement?.tagName} ${parentElement?.className}`);
@@ -659,8 +666,26 @@ async function scanAllVariations() {
               }
             }
 
-            buttonText = buttonText.replace(/See available options?/gi, '').replace(/\s+/g, ' ').trim();
-            console.log(`   📝 Extracted text: "${buttonText}"`);
+            // Apply same aggressive cleaning as initial scan
+            if (buttonText) {
+              buttonText = buttonText
+                .split(/\/\*|<!--|<style/i)[0]
+                .replace(/\$[\d.,]+/g, '')
+                .replace(/See available options?/gi, '')
+                .replace(/FREE Delivery/gi, '')
+                .replace(/Only \d+ left in stock/gi, '')
+                .replace(/In Stock/gi, '')
+                .replace(/per count/gi, '')
+                .replace(/\(.+?\)/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+              const words = buttonText.split(/\s+/);
+              if (words.length > 0 && words[0].match(/\d+(oz|ml|g|kg|lb)/i)) {
+                buttonText = words[0];
+              }
+            }
+            console.log(`   📝 Final extracted text: "${buttonText}"`);
 
               // Try to match 14oz
               if (buttonText && (buttonText.includes('14') && buttonText.toLowerCase().includes('oz'))) {
@@ -769,7 +794,25 @@ async function scanAllVariations() {
 
           // For standalone size_name_N buttons
           if (button.tagName === 'SPAN' && button.id && button.id.startsWith('size_name_')) {
-            buttonText = button.textContent.trim();
+            // Try to find the .a-button-text element (contains the size like "7oz", "12oz", "14oz")
+            const innerSpan = button.querySelector('.a-button-text');
+
+            if (innerSpan && innerSpan.textContent) {
+              // The text content has format: "    7oz              /* Temporary CSS..."
+              // We need to extract just "7oz" from this
+              const rawText = innerSpan.textContent;
+
+              // Remove CSS comments and everything after them
+              const beforeCSS = rawText.split('/*')[0];
+
+              // Trim and collapse multiple spaces, then get the first word
+              buttonText = beforeCSS.trim().split(/\s+/)[0];
+              console.log(`   📝 SPAN button raw text: "${rawText.substring(0, 80)}"`);
+              console.log(`   📝 SPAN button extracted: "${buttonText}"`);
+            } else {
+              // Fallback to full text if no inner span found
+              buttonText = button.textContent.trim();
+            }
           } else {
             // Original logic
             let parentElement = button.closest('li') || button.closest('.a-button-group') || button.closest('[data-csa-c-element-id]');
@@ -781,7 +824,26 @@ async function scanAllVariations() {
             }
           }
 
-          buttonText = buttonText.replace(/See available options?/gi, '').replace(/\s+/g, ' ').trim();
+          // Clean up button text (remove extra whitespace, "See available options", CSS, prices, etc.)
+          if (buttonText) {
+            buttonText = buttonText
+              .split(/\/\*|<!--|<style/i)[0]  // Cut off at CSS/HTML comments
+              .replace(/\$[\d.,]+/g, '')       // Remove prices like $39.99
+              .replace(/See available options?/gi, '')
+              .replace(/FREE Delivery/gi, '')
+              .replace(/Only \d+ left in stock/gi, '')
+              .replace(/In Stock/gi, '')
+              .replace(/per count/gi, '')
+              .replace(/\(.+?\)/g, '')         // Remove parenthetical content
+              .replace(/\s+/g, ' ')            // Collapse multiple spaces
+              .trim();
+
+            // Final extraction: get just the size (first word)
+            const words = buttonText.split(/\s+/);
+            if (words.length > 0 && words[0].match(/\d+(oz|ml|g|kg|lb)/i)) {
+              buttonText = words[0];
+            }
+          }
 
           console.log(`   Re-queried button: "${buttonText}"`);
 
@@ -844,7 +906,9 @@ async function scanAllVariations() {
       const filteredSizesToScan = sizesToScan.filter(s => s.name === targetSize.name);
 
       if (targetSizeAvailable && filteredSizesToScan.length > 0) {
-        console.log(`Will scan ${filteredSizesToScan.length} size(s) for color ${color.name}: ${filteredSizesToScan.map(s => s.name).join(', ')}`);
+        if (color) {
+          console.log(`Will scan ${filteredSizesToScan.length} size(s) for color ${color.name}: ${filteredSizesToScan.map(s => s.name).join(', ')}`);
+        }
 
         // Now try each size for this color
         for (let sizeIndex = 0; sizeIndex < filteredSizesToScan.length; sizeIndex++) {
@@ -956,11 +1020,17 @@ async function scanAllVariations() {
           });
 
         } catch (error) {
-          console.error(`Error scanning ${color.name} - ${size.name}:`, error);
+          if (color && size) {
+            console.error(`Error scanning ${color.name} - ${size.name}:`, error);
+          } else {
+            console.error(`Error scanning variation:`, error);
+          }
         }
         }
       } else { // Close the if block for target size availability check
-        console.warn(`Target size ${targetSize.name} not available for color ${color.name} - SKIPPING this color entirely`);
+        if (color) {
+          console.warn(`Target size ${targetSize.name} not available for color ${color.name} - SKIPPING this color entirely`);
+        }
       }
 
     console.log(`Combination scan complete. Found ${results.length} variations with prices.`);
