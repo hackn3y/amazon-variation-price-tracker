@@ -437,18 +437,22 @@ async function saveResults(results) {
 
   // Try to get base ASIN from results first (contains baseAsin from page)
   let asin = results[0]?.baseAsin;
+  console.log(`saveResults: Extracted baseAsin from results[0]: ${asin}`);
 
   // Fallback to URL parsing
   if (!asin) {
     asin = getBaseAsin(currentTab.url);
+    console.log(`saveResults: Fell back to URL-based ASIN: ${asin}`);
   }
 
   if (!asin) {
-    console.error('saveResults: No ASIN found');
+    console.error('❌ saveResults: No ASIN found - cannot save!');
+    console.error('   Results[0]:', results[0]);
+    console.error('   Current URL:', currentTab.url);
     return;
   }
 
-  console.log(`saveResults: Using base ASIN ${asin} for storage key`);
+  console.log(`✅ saveResults: Using base ASIN ${asin} for storage key`);
 
   const timestamp = new Date().toISOString();
   console.log(`saveResults: Saving ${results.length} results for ASIN ${asin}`);
@@ -519,9 +523,12 @@ async function restoreLastScanResults() {
     const storage = await chrome.storage.local.get('priceHistory');
     const history = storage.priceHistory || {};
 
+    console.log(`restoreLastScanResults: Checking storage for ASIN: ${asin}`);
+    console.log(`restoreLastScanResults: Available ASINs in storage:`, Object.keys(history));
+
     if (history[asin] && history[asin].lastScanResults && history[asin].lastScanResults.length > 0) {
       scanResults = history[asin].lastScanResults;
-      console.log(`Restored ${scanResults.length} scan results from storage`);
+      console.log(`✅ Restored ${scanResults.length} scan results from storage for ASIN ${asin}`);
 
       // Small delay to ensure DOM is ready
       setTimeout(() => {
@@ -531,7 +538,13 @@ async function restoreLastScanResults() {
 
       return true; // Indicate that results were restored
     } else {
-      console.log('No previous scan results found for this product');
+      if (!history[asin]) {
+        console.log(`❌ No history entry found for ASIN: ${asin}`);
+      } else if (!history[asin].lastScanResults) {
+        console.log(`❌ History entry exists for ${asin} but no lastScanResults`);
+      } else if (history[asin].lastScanResults.length === 0) {
+        console.log(`❌ lastScanResults exists for ${asin} but is empty`);
+      }
       return false; // No results restored
     }
   } catch (error) {
