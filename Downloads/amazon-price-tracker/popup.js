@@ -417,11 +417,16 @@ function displayResults(results) {
     item.innerHTML = `
       <div class="variation-name">
         <span style="color: #999; font-size: 11px; margin-right: 5px;">#${index + 1}</span>
-        ${result.variationName || 'Unknown'}
+        <a href="${result.url}" target="_blank" style="color: inherit; text-decoration: none;" title="Open in new tab">
+          ${result.variationName || 'Unknown'}
+        </a>
         ${isCheapest && !isOutOfStock ? '<span class="cheapest-badge">CHEAPEST</span>' : ''}
         ${isOutOfStock ? '<span class="out-of-stock-badge">OUT OF STOCK</span>' : ''}
       </div>
-      <div class="variation-price">${isOutOfStock ? 'Unavailable' : result.currentPrice}</div>
+      <div class="variation-price">
+        ${isOutOfStock ? 'Unavailable' : result.currentPrice}
+        ${!isOutOfStock ? '<a href="' + result.url + '" target="_blank" class="buy-link" title="Buy now">🛒</a>' : ''}
+      </div>
     `;
 
     resultsDiv.appendChild(item);
