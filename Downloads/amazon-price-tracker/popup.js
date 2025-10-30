@@ -666,6 +666,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.type === 'scanProgress') {
     const progressText = `Scanning color ${request.current} of ${request.total}...`;
     console.log('Updating progress:', progressText);
-    document.getElementById('progress').textContent = progressText;
+    const progressEl = document.getElementById('progress');
+    if (progressEl) {
+      progressEl.style.display = 'block';
+      progressEl.textContent = progressText;
+      console.log('Progress element updated successfully');
+    } else {
+      console.error('Progress element not found!');
+    }
   }
 });
