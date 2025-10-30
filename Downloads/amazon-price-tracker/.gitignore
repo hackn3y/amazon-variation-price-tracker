@@ -1,0 +1,18 @@
+# Test and debug files
+check_depth.js
+check_full_depth.js
+find_mismatch.js
+test_func.js
+test_minimal.js
+create_icons.html
+
+# Node modules (if any)
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
