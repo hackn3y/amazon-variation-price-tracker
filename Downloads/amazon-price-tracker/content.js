@@ -589,7 +589,7 @@ async function scanAllVariations() {
         } else {
           targetSize.element.click();
         }
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       // Click the color
@@ -601,8 +601,8 @@ async function scanAllVariations() {
         color.element.click();
       }
 
-      // Wait longer after color change for Amazon to update the page
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Wait for Amazon to update the page after color change
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // CRITICAL: Re-select 14oz AFTER color change because Amazon may have switched to 7oz
       console.log(`🔄 Re-selecting 14oz after color change to ${color.name}`);
@@ -757,7 +757,7 @@ async function scanAllVariations() {
                   }
 
                   foundButton = true;
-                  await new Promise(resolve => setTimeout(resolve, 2000));
+                  await new Promise(resolve => setTimeout(resolve, 600));
                   console.log(`✅ 14oz button interaction complete`);
                   break;
                 } else {
@@ -780,7 +780,7 @@ async function scanAllVariations() {
         }
 
         // Wait for the re-selection to take effect
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 300));
 
       // Re-query size elements after color change since DOM may have updated
       const updatedSizes = [];
@@ -972,7 +972,7 @@ async function scanAllVariations() {
           }
 
           // Wait for price to update after size change
-          await new Promise(resolve => setTimeout(resolve, 2500));
+          await new Promise(resolve => setTimeout(resolve, 800));
 
           // ULTRA-CRITICAL: Verify we're actually on 14oz before extracting price
           console.log(`🔍 Verifying we're on the correct size before extracting price...`);
@@ -1111,8 +1111,8 @@ async function scanAllVariations() {
         variation.element.click();
       }
 
-      // Wait longer for price to update - increased to 2 seconds for more reliable updates
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Wait for price to update
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       // Extract data AFTER the wait
       const data = extractProductData();

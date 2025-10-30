@@ -11,24 +11,27 @@ function getBaseAsin(url) {
   const twisterMatch = url.match(/[?&]th=1[^&]*[?&]psc=1[^&]*(?:.*?)twister[_-]?([A-Z0-9]{10})/i) ||
                        url.match(/twister[_-]?([A-Z0-9]{10})/i);
   if (twisterMatch) {
-    console.log(`Using twister ASIN (parent): ${twisterMatch[1]}`);
+    console.log(`getBaseAsin: Using twister ASIN (parent): ${twisterMatch[1]}`);
     return twisterMatch[1];
   }
 
   // Try to get from parent_asin parameter
   const parentMatch = url.match(/[?&]parent[_-]?asin=([A-Z0-9]{10})/i);
   if (parentMatch) {
-    console.log(`Using parent_asin parameter: ${parentMatch[1]}`);
+    console.log(`getBaseAsin: Using parent_asin parameter: ${parentMatch[1]}`);
     return parentMatch[1];
   }
 
-  // Fall back to dp ASIN (might be a variant, but better than nothing)
+  // Fall back to dp ASIN and normalize across variants
+  // For products with variations, the base ASIN is consistent across color variants
   const dpMatch = url.match(/\/dp\/([A-Z0-9]{10})/);
   if (dpMatch) {
-    console.log(`Using dp ASIN (may be variant): ${dpMatch[1]}`);
-    return dpMatch[1];
+    const asin = dpMatch[1];
+    console.log(`getBaseAsin: Using dp ASIN: ${asin} (will normalize across variants)`);
+    return asin;
   }
 
+  console.log(`getBaseAsin: No ASIN found in URL: ${url}`);
   return null;
 }
 
@@ -432,12 +435,20 @@ async function saveResults(results) {
     return;
   }
 
-  // Use base ASIN from URL instead of variant ASIN from results
-  const asin = getBaseAsin(currentTab.url);
+  // Try to get base ASIN from results first (contains baseAsin from page)
+  let asin = results[0]?.baseAsin;
+
+  // Fallback to URL parsing
   if (!asin) {
-    console.error('saveResults: No ASIN found in URL');
+    asin = getBaseAsin(currentTab.url);
+  }
+
+  if (!asin) {
+    console.error('saveResults: No ASIN found');
     return;
   }
+
+  console.log(`saveResults: Using base ASIN ${asin} for storage key`);
 
   const timestamp = new Date().toISOString();
   console.log(`saveResults: Saving ${results.length} results for ASIN ${asin}`);
@@ -478,23 +489,24 @@ async function saveResults(results) {
 // Restore last scan results when popup opens
 async function restoreLastScanResults() {
   try {
-    // Get base ASIN (same across all color variants)
-    let asin = getBaseAsin(currentTab.url);
-
-    if (!asin) {
-      // Fallback to asking content script for base ASIN
-      try {
-        const response = await sendMessageWithRetry(currentTab.id, {
-          action: 'extractCurrentPrice'
-        });
-        if (response) {
-          // Prefer baseAsin if available, otherwise use asin
-          asin = response.baseAsin || response.asin;
-        }
-      } catch (error) {
-        console.log('Could not get ASIN from content script:', error);
-        return false; // Silent fail
+    // FIRST, try to get base ASIN from content script (most reliable for variants)
+    let asin = null;
+    try {
+      const response = await sendMessageWithRetry(currentTab.id, {
+        action: 'extractCurrentPrice'
+      });
+      if (response) {
+        // Prefer baseAsin (parent product) over asin (variant)
+        asin = response.baseAsin || response.asin;
+        console.log(`restoreLastScanResults: Got ASIN from content script: ${asin} (baseAsin: ${response.baseAsin}, asin: ${response.asin})`);
       }
+    } catch (error) {
+      console.log('Could not get ASIN from content script, falling back to URL:', error);
+    }
+
+    // Fallback to URL parsing if content script fails
+    if (!asin) {
+      asin = getBaseAsin(currentTab.url);
     }
 
     if (!asin) {
