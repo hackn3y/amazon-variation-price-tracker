@@ -15,33 +15,59 @@ function extractProductData() {
     asin: ''
   };
 
+  // Extract current variant ASIN from URL first
+  const dpMatch = window.location.href.match(/\/dp\/([A-Z0-9]{10})/);
+  if (dpMatch) {
+    data.asin = dpMatch[1];
+  }
+
   // Extract base/parent ASIN - try multiple methods
   // Method 1: Check for twister/parent ASIN in URL (most reliable for variants)
   const twisterMatch = window.location.href.match(/twister[_-]?([A-Z0-9]{10})/i);
   if (twisterMatch) {
-    data.asin = twisterMatch[1];
     data.baseAsin = twisterMatch[1];
   }
 
-  // Method 2: Try to find parent ASIN in page data attributes
-  if (!data.asin) {
-    const parentAsinElements = document.querySelectorAll('[data-parent-asin], [data-asin]');
-    for (const element of parentAsinElements) {
-      const parentAsin = element.getAttribute('data-parent-asin');
-      if (parentAsin && parentAsin.match(/^[A-Z0-9]{10}$/)) {
-        data.asin = parentAsin;
-        data.baseAsin = parentAsin;
-        break;
+  // Method 2: Look for parent ASIN in page metadata
+  if (!data.baseAsin) {
+    // Try window.ue_pti (Amazon's page metadata)
+    if (window.ue_pti && typeof window.ue_pti === 'string') {
+      const ptiMatch = window.ue_pti.match(/^[A-Z0-9]{10}$/);
+      if (ptiMatch) {
+        data.baseAsin = window.ue_pti;
+        console.log(`Found baseAsin from ue_pti: ${data.baseAsin}`);
       }
     }
   }
 
-  // Method 3: Fall back to dp ASIN from URL (might be a variant ASIN)
-  if (!data.asin) {
-    const asinMatch = window.location.href.match(/\/dp\/([A-Z0-9]{10})/);
-    if (asinMatch) {
-      data.asin = asinMatch[1];
+  // Method 3: Try data-parent-asin attribute
+  if (!data.baseAsin) {
+    const parentAsinEl = document.querySelector('[data-parent-asin]');
+    if (parentAsinEl) {
+      const parentAsin = parentAsinEl.getAttribute('data-parent-asin');
+      if (parentAsin && parentAsin.match(/^[A-Z0-9]{10}$/)) {
+        data.baseAsin = parentAsin;
+        console.log(`Found baseAsin from data-parent-asin: ${data.baseAsin}`);
+      }
     }
+  }
+
+  // Method 4: Check for canonical link (often contains parent ASIN)
+  if (!data.baseAsin) {
+    const canonical = document.querySelector('link[rel="canonical"]');
+    if (canonical) {
+      const canonicalMatch = canonical.href.match(/\/dp\/([A-Z0-9]{10})/);
+      if (canonicalMatch) {
+        data.baseAsin = canonicalMatch[1];
+        console.log(`Found baseAsin from canonical link: ${data.baseAsin}`);
+      }
+    }
+  }
+
+  // Method 5: If still no baseAsin, use the variant ASIN (better than nothing)
+  if (!data.baseAsin && data.asin) {
+    data.baseAsin = data.asin;
+    console.log(`Using variant ASIN as baseAsin: ${data.baseAsin}`);
   }
 
   // Extract product title
