@@ -228,6 +228,25 @@ function extractProductData() {
     }
   }
 
+  // If no size found with standard selectors, check for standalone SPAN buttons with .a-button-selected
+  if (variations.length === 1) { // Only color found, no size yet
+    const selectedSpan = document.querySelector('[id^="size_name_"].a-button-selected, [id^="size_name_"] .a-button-selected');
+    if (selectedSpan) {
+      // Find the actual SPAN button element
+      const spanButton = selectedSpan.id && selectedSpan.id.startsWith('size_name_') ? selectedSpan : selectedSpan.closest('[id^="size_name_"]');
+      if (spanButton) {
+        const innerSpan = spanButton.querySelector('.a-button-text');
+        if (innerSpan && innerSpan.textContent) {
+          const rawText = innerSpan.textContent;
+          const beforeCSS = rawText.split('/*')[0];
+          const sizeText = beforeCSS.trim().split(/\s+/)[0];
+          console.log(`Found size variation from selected SPAN button: "${sizeText}"`);
+          variations.push(sizeText);
+        }
+      }
+    }
+  }
+
   // Combine color and size if both exist, e.g., "White - 14oz"
   if (variations.length > 0) {
     data.currentVariation = variations.join(' - ');
