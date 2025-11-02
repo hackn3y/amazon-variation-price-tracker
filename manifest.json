@@ -1,8 +1,10 @@
 {
   "manifest_version": 3,
   "name": "Amazon Variation Price Tracker",
-  "version": "1.0",
-  "description": "Track prices across all color/size variations on Amazon product pages",
+  "version": "1.0.0",
+  "description": "Find the cheapest color and size variation instantly. Scans all options and shows the best price.",
+  "author": "Ryan Hackney",
+  "homepage_url": "https://github.com/hackn3y/amazon-variation-price-tracker",
   "permissions": [
     "storage",
     "activeTab"

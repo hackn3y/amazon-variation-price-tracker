@@ -2,28 +2,48 @@
 
 A Chrome extension that automatically scans all color/size variations on Amazon product pages to help you find the best deal. It also tracks price history over time so you can spot sales and price drops.
 
+<!-- Uncomment after Chrome Web Store publication:
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/YOUR_EXTENSION_ID.svg)](https://chrome.google.com/webstore/detail/YOUR_EXTENSION_ID)
+[![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/YOUR_EXTENSION_ID.svg)](https://chrome.google.com/webstore/detail/YOUR_EXTENSION_ID)
+-->
+
 ## Features
 
 - 🔍 **Automatic Scanning**: Click one button to scan all variations on a product page
 - 💰 **Find Cheapest**: Automatically highlights the lowest-priced variation
+- 🛒 **One-Click Purchase**: Clickable links to buy the best deal instantly
 - 📊 **Price History**: Tracks prices over time to help you spot sales
+- ⚡ **Fast Scanning**: Scans 24 variations in about 1 minute
 - 🎯 **Simple Interface**: Clean, easy-to-use popup interface
 - 💾 **Local Storage**: All data stored locally on your computer
+- 🔒 **Privacy First**: No data collection or tracking
 
 ## Installation
 
-### Step 1: Download the Extension
+### Option 1: Chrome Web Store (Recommended)
+<!-- Uncomment after publication:
+1. Visit the [Chrome Web Store page](https://chrome.google.com/webstore/detail/YOUR_EXTENSION_ID)
+2. Click "Add to Chrome"
+3. Click "Add extension" to confirm
+4. The extension icon will appear in your toolbar
+-->
+
+*Coming soon to Chrome Web Store!*
+
+### Option 2: Manual Installation (Developer Mode)
+
+**Step 1: Download the Extension**
 1. Download all files in this folder
 2. Keep them together in a folder called `amazon-price-tracker`
 
-### Step 2: Load into Chrome
+**Step 2: Load into Chrome**
 1. Open Chrome and go to `chrome://extensions/`
 2. Enable "Developer mode" using the toggle in the top-right corner
 3. Click "Load unpacked"
 4. Select the `amazon-price-tracker` folder
 5. The extension icon should now appear in your Chrome toolbar
 
-### Step 3: Pin the Extension (Optional)
+**Step 3: Pin the Extension (Optional)**
 1. Click the puzzle piece icon in Chrome's toolbar
 2. Find "Amazon Variation Price Tracker"
 3. Click the pin icon to keep it visible

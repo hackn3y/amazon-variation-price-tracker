@@ -6,6 +6,10 @@ test_func.js
 test_minimal.js
 create_icons.html
 
+# Build/deployment files
+*.zip
+temp-*/
+
 # Node modules (if any)
 node_modules/
 
